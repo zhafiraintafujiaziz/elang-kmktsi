@@ -4347,16 +4347,16 @@ function renderIncidentCfmList(inc) {
     const row = document.createElement("div");
     row.style.cssText = "display: grid; grid-template-columns: 85px 1.5fr 2fr 30px; gap: 8px; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px; border: 1px solid #e2e8f0;";
     row.innerHTML = `
-      <input type="text" class="form-input" style="padding: 2px 6px; font-size: 11px; font-family: monospace; font-weight: 700;" value="${cfm.time}" onchange="updateCfmItem(${idx}, 'time', this.value)" placeholder="HH:MM:SS">
-      <input type="text" class="form-input" style="padding: 2px 6px; font-size: 11px; font-weight: 600;" value="${cfm.name}" onchange="updateCfmItem(${idx}, 'name', this.value)" placeholder="Nama CFM">
-      <input type="text" class="form-input" style="padding: 2px 6px; font-size: 11px; color: var(--text-muted);" value="${cfm.note || ''}" onchange="updateCfmItem(${idx}, 'note', this.value)" placeholder="Catatan hasil rapat">
+      <input type="text" class="form-input" style="padding: 2px 6px; font-size: 11px; font-family: monospace; font-weight: 700;" value="${cfm.time}" onchange="updateIncidentCfmItem(${idx}, 'time', this.value)" placeholder="HH:MM:SS">
+      <input type="text" class="form-input" style="padding: 2px 6px; font-size: 11px; font-weight: 600;" value="${cfm.name}" onchange="updateIncidentCfmItem(${idx}, 'name', this.value)" placeholder="Nama CFM">
+      <input type="text" class="form-input" style="padding: 2px 6px; font-size: 11px; color: var(--text-muted);" value="${cfm.note || ''}" onchange="updateIncidentCfmItem(${idx}, 'note', this.value)" placeholder="Catatan hasil rapat">
       <button style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 13px; font-weight: bold;" onclick="deleteIncidentCfmRow(${idx})" title="Hapus titik CFM">✕</button>
     `;
     container.appendChild(row);
   });
 }
 
-function updateCfmItem(index, field, value) {
+function updateIncidentCfmItem(index, field, value) {
   const inc = INCIDENTS_DATA.find(x => x.id === currentLambdaIncId);
   if (inc && inc.cfms && inc.cfms[index]) {
     inc.cfms[index][field] = value;
