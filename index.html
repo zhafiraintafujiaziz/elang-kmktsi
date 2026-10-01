@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elang - Emergency & Continuity Management | Bank Indonesia</title>
+  <link rel="icon" type="image/png" href="e-lang-logo.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet.js for Authentic Indonesia Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <link rel="stylesheet" href="styles.css?v=3.0">
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- LEFT SIDEBAR (DARK NAVY) -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="bi-logo-container">
+            <div class="bi-logo-icon">
+              <img src="e-lang-logo.png" alt="Logo Elang Bank Indonesia">
+            </div>
+            <div class="bi-logo-text">
+              <h2>Elang <span>BI</span></h2>
+              <p>Emergency & Continuity Management<br>Bank Indonesia</p>
+            </div>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <!-- MENU 1: MONITORING BCM GENERAL & DISASTER L.1 / L.2 / L.3 -->
+          <a class="nav-item active" id="navMonitor" href="#monitor" onclick="switchMainView('monitor')">
+            <span class="nav-icon">📊</span>
+            <span>Monitoring BCM</span>
+          </a>
+
+          <!-- MENU 2: PROFIL WILAYAH KP & 46 KPW -->
+          <a class="nav-item" id="navProfilWilayah" href="#profil-wilayah" onclick="switchMainView('profil-wilayah')">
+            <span class="nav-icon">🏛️</span>
+            <span>Profil Wilayah (46 KPw)</span>
+          </a>
+
+          <!-- MENU 3: PANDUAN RESPON CEPAT -->
+          <a class="nav-item" id="navResponCepat" href="#respon-cepat" onclick="switchMainView('respon-cepat')">
+            <span class="nav-icon">📋</span>
+            <span>Panduan Respon Cepat</span>
+          </a>
+
+          <!-- MENU 4: INCIDENT REPORT -->
+          <a class="nav-item" id="navIncidentReport" href="#incident-report" onclick="switchMainView('incident-report')">
+            <span class="nav-icon">🚨</span>
+            <span>Incident Report</span>
+          </a>
+
+          <!-- MENU 5: REPOSITORY PKT & DRA -->
+          <a class="nav-item" id="navRepositoryPkt" href="#repository-pkt" onclick="switchMainView('pkt')">
+            <span class="nav-icon">📁</span>
+            <span>Repository PKT & DRA</span>
+          </a>
+
+          <!-- EXTERNAL EWS -->
+          <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-sidebar);">
+            <div class="nav-section-title">Aplikasi Terintegrasi</div>
+            <a class="nav-item" href="https://ews-kmktsi.vercel.app" target="_blank" rel="noopener noreferrer">
+              <span class="nav-icon">🗺️</span>
+              <span>Peta Risiko EWS ↗</span>
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="bi-motto-box">
+          <p>"Resilient People<br>Resilient System<br>Resilient Indonesia"</p>
+        </div>
+        <div class="sidebar-version">
+          <span>Elang v2.0 | DMR</span>
+          <span>Bank Indonesia</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- TOPBAR (DARK NAVY) -->
+      <header class="topbar">
+        <div class="topbar-title-section">
+          <h1>
+            <span>Elang</span>
+            <span class="topbar-badge">Emergency & Continuity Management</span>
+          </h1>
+          <p class="topbar-subtitle">
+            <strong>Monitor • Prepare • Respond • Recover</strong> — <span>Menjaga Stabilitas Sistem Pembayaran & Moneter, Memperkuat Ketahanan untuk Indonesia Maju</span>
+          </p>
+        </div>
+        <div class="topbar-actions">
+          <div class="live-clock-card">
+            <span class="clock-dot"></span>
+            <span id="liveClockText">Selasa, 10 Jun 2025 | 09:42:00 WIB</span>
+          </div>
+          <button class="btn-primary" onclick="openNewIncidentModal()">
+            <span>➕</span>
+            <span>Catat Insiden</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- FILTER BAR (CRISP WHITE) -->
+      <section class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">Tahun:</span>
+          <select id="filterTahun" class="select-filter" onchange="applyGlobalFilters()">
+            <option value="Semua">Semua (2018 - 2026)</option>
+            <option value="2026">2026</option>
+            <option value="2025" selected>2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+            <option value="2019">2019</option>
+            <option value="2018">2018</option>
+          </select>
+
+          <span class="filter-label" style="margin-left: 8px;">Jenis Disaster:</span>
+          <select id="filterDisaster" class="select-filter" onchange="onGlobalDisasterFilterChange()">
+            <option value="Semua">Semua Kategori</option>
+            <option value="Natural Disaster">Natural Disaster</option>
+            <option value="Man Made Disaster">Man Made Disaster</option>
+            <option value="Technology Disaster">Technology Disaster</option>
+          </select>
+
+          <span class="filter-label" style="margin-left: 8px;">Satker / KPwDN:</span>
+          <select id="filterSatker" class="select-filter" onchange="applyGlobalFilters()" style="max-width: 280px;">
+            <option value="Semua">Semua Satker & KPwDN</option>
+            <option value="kpwbi-kantor-pusat">🏛️ Kantor Pusat Bank Indonesia</option>
+            <!-- Populated via JS with 46 KPwDN -->
+          </select>
+
+          <!-- Reset Button moved directly beside Satker/KPwDN Filter -->
+          <button class="btn-secondary" onclick="resetFilters()" title="Reset semua filter">
+            <span>🔄</span>
+            <span>Reset</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- CONTENT CONTAINER (CRISP WHITE THEME) -->
+      <div class="content-container">
+
+        <!-- ===================================================================
+             VIEW 1: DASHBOARD MONITOR GENERAL & SUB-VIEWS (L.1, L.2, L.3)
+             =================================================================== -->
+        <section id="viewMonitor" class="view-section active">
+          <!-- MONITOR SUB-NAV PILLS -->
+          <div class="monitor-subnav-bar">
+            <button class="subnav-btn active" id="subnavBtnGeneral" onclick="switchMonitorSubView('general')">
+              <span>🌐</span>
+              <span>Monitor General</span>
+              <span class="subnav-badge" id="subnavBadgeAll">Semua</span>
+            </button>
+            <button class="subnav-btn" id="subnavBtnNatural" onclick="switchMonitorSubView('natural')">
+              <span>🌊</span>
+              <span>Natural Disaster - L.1</span>
+              <span class="subnav-badge" id="subnavBadgeNatural">Alam</span>
+            </button>
+            <button class="subnav-btn" id="subnavBtnManMade" onclick="switchMonitorSubView('manmade')">
+              <span>👥</span>
+              <span>Man Made Disaster - L.2</span>
+              <span class="subnav-badge" id="subnavBadgeManMade">Sosial/Fisik</span>
+            </button>
+            <button class="subnav-btn" id="subnavBtnTech" onclick="switchMonitorSubView('tech')">
+              <span>💻</span>
+              <span>Technology Disaster - L.3</span>
+              <span class="subnav-badge" id="subnavBadgeTech">7 Layer OSI & APTK</span>
+            </button>
+          </div>
+
+          <!-- DYNAMIC DISASTER FOCUS BANNER (Shown for L.1, L.2, L.3) -->
+          <div id="disasterFocusBanner" class="disaster-focus-banner" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 24px;" id="focusBannerIcon">🌊</span>
+              <div>
+                <strong style="font-size: 13px; color: var(--text-dark);" id="focusBannerTitle">Fokus Pemantauan: Natural Disaster (Tingkat Level 1)</strong>
+                <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;" id="focusBannerDesc">
+                  Memantau ancaman gempa tektonik, banjir bandang, erupsi abu vulkanik, dan cuaca ekstrem pada 46 KPwDN. Parameter relokasi dan batas MTPD aktif.
+                </p>
+              </div>
+            </div>
+            <button class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="switchMonitorSubView('general')">
+              ✕ Kembali ke General
+            </button>
+          </div>
+
+          <!-- ROW 1: TOP KPI CARDS -->
+          <section class="kpi-grid">
+            <!-- Total Insiden -->
+            <div class="kpi-card">
+              <div class="kpi-icon blue">📋</div>
+              <div class="kpi-body">
+                <div class="kpi-label">Total Insiden</div>
+                <div class="kpi-value-row">
+                  <span class="kpi-value" id="kpiTotalInsiden">96</span>
+                  <span class="kpi-badge down-good">↓ -18%</span>
+                </div>
+                <div class="kpi-subtext">dibanding tahun lalu</div>
+              </div>
+            </div>
+
+            <!-- Insiden Aktif -->
+            <div class="kpi-card">
+              <div class="kpi-icon red">⚠️</div>
+              <div class="kpi-body">
+                <div class="kpi-label">Insiden Aktif</div>
+                <div class="kpi-value-row">
+                  <span class="kpi-value" id="kpiInsidenAktif" style="color: #dc2626;">7</span>
+                  <span class="kpi-badge up-alert">↑ +2</span>
+                </div>
+                <div class="kpi-subtext">dalam penanganan BCM</div>
+              </div>
+            </div>
+
+            <!-- Insiden Selesai -->
+            <div class="kpi-card">
+              <div class="kpi-icon green">🛡️</div>
+              <div class="kpi-body">
+                <div class="kpi-label">Insiden Selesai</div>
+                <div class="kpi-value-row">
+                  <span class="kpi-value" id="kpiInsidenSelesai" style="color: #10b981;">89</span>
+                  <span class="kpi-badge up-good">↑ +12%</span>
+                </div>
+                <div class="kpi-subtext">memenuhi batas MTPD/RTO</div>
+              </div>
+            </div>
+
+            <!-- Total Satker / KPwDN -->
+            <div class="kpi-card">
+              <div class="kpi-icon gold">🏛️</div>
+              <div class="kpi-body">
+                <div class="kpi-label">Kantor Pusat & KPwDN</div>
+                <div class="kpi-value-row">
+                  <span class="kpi-value" id="kpiTotalSatker">47</span>
+                  <span class="kpi-badge" style="background: rgba(179, 134, 24, 0.12); color: var(--gold-primary);">
+                    <strong id="kpiSudahKumpul">39</strong>&nbsp;Sudah • <strong id="kpiBelumKumpul">8</strong>&nbsp;Belum
+                  </span>
+                </div>
+                <div class="kpi-subtext">Tingkat Kepatuhan PKT: <strong id="kpiRateKumpul">83%</strong></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ROW 2: TREN DISASTER DINAMIS, PETA INDONESIA / GRAFIK 7 LAYERS OF OSI, RISK HEATMAP -->
+          <section class="grid-row-middle" style="margin-top: 16px;">
+            <!-- Tren Insiden per Jenis Disaster (Dinamis Sesuai Sub-view) -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span>Tren Insiden per Jenis Disaster</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: var(--gold-primary);" id="trenChartFilterLabel">Semua Kategori (2018 - 2026)</span>
+              </div>
+              <div class="card-body">
+                <div class="chart-container">
+                  <canvas id="disasterTrendChart"></canvas>
+                </div>
+                <div class="chart-legend-custom">
+                  <div class="legend-item">
+                    <span class="legend-color-dot" style="background-color: var(--disaster-natural);"></span>
+                    <span>Natural</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color-dot" style="background-color: var(--disaster-manmade);"></span>
+                    <span>Man-Made</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color-dot" style="background-color: var(--disaster-tech);"></span>
+                    <span>Technology</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MIDDLE COLUMN: PETA INDONESIA (General, Natural, Man-Made) ATAU GRAFIK 7 LAYERS OF OSI (Technology) -->
+            
+            <!-- 1. PETA RISIKO INDONESIA (Ditampilkan pada General, Natural, Man-Made) -->
+            <div class="dashboard-card map-visual-card" id="indonesiaMapContainer">
+              <div class="map-card-banner">
+                <div class="map-banner-title">
+                  <span id="mapTitleText">📍 Peta Risiko Insiden Indonesia (46 KPwDN)</span>
+                </div>
+                <a href="https://ews-kmktsi.vercel.app" target="_blank" rel="noopener noreferrer" class="btn-open-ews" title="Buka Aplikasi EWS Bencana Live">
+                  <span>🌐 EWS Live</span>
+                  <span>↗</span>
+                </a>
+              </div>
+              <div class="card-body" style="padding: 6px 12px; position: relative;">
+                <!-- Container Leaflet Map -->
+                <div id="indonesiaLeafletMap"></div>
+
+                <div class="map-legend-row">
+                  <div class="legend-item"><span class="map-legend-dot" style="background: #22c55e;"></span><span>Rendah</span></div>
+                  <div class="legend-item"><span class="map-legend-dot" style="background: #eab308;"></span><span>Sedang</span></div>
+                  <div class="legend-item"><span class="map-legend-dot" style="background: #f97316;"></span><span>Tinggi</span></div>
+                  <div class="legend-item"><span class="map-legend-dot" style="background: #ef4444;"></span><span>Sangat Tinggi</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. GRAFIK 7 LAYERS OF OSI (Khusus Ditampilkan Ketika Technology Disaster - L.3 Dipilih) -->
+            <div class="dashboard-card osi-chart-card" id="techOsiContainer" style="display: none;">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span>Insiden Gangguan TI pada 7 Layers of OSI</span>
+                </div>
+                <span style="font-size: 10.5px; font-weight: 700; color: #2563eb; background: rgba(37,99,235,0.1); padding: 2px 6px; border-radius: 4px;">
+                  Arsitektur TI & Jaringan
+                </span>
+              </div>
+              <div class="card-body" style="padding: 10px 14px;">
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; display: flex; justify-content: space-between;">
+                  <span>Distribusi Gangguan Infrastruktur per Layer:</span>
+                  <span style="font-weight: 700; color: #dc2626;">Kritis: Layer 7 & Layer 1</span>
+                </div>
+                
+                <!-- Stacked 7 Layers visualizer -->
+                <div class="osi-layers-stack" id="osiLayersContainer">
+                  <!-- Layer 7: Application -->
+                  <div class="osi-layer-row" onclick="filterOsiLayer(7)">
+                    <span class="osi-layer-badge osi-badge-l7">L.7 App</span>
+                    <span class="osi-layer-name">Application</span>
+                    <span class="osi-layer-example">BI-RTGS, BI-FAST, CBS, SKNBI</span>
+                    <span class="osi-count-pill" style="color: #dc2626;">9 Insiden</span>
+                    <span class="badge-status belum">Kritis</span>
+                  </div>
+
+                  <!-- Layer 6: Presentation -->
+                  <div class="osi-layer-row" onclick="filterOsiLayer(6)">
+                    <span class="osi-layer-badge osi-badge-l6">L.6 Pres</span>
+                    <span class="osi-layer-name">Presentation</span>
+                    <span class="osi-layer-example">Enkripsi Ransomware, SSL/TLS, Parsing</span>
+                    <span class="osi-count-pill" style="color: #ea580c;">4 Insiden</span>
+                    <span class="badge-status" style="background: rgba(234, 88, 12, 0.12); color: #ea580c;">Siaga</span>
+                  </div>
+
+                  <!-- Layer 5: Session -->
+                  <div class="osi-layer-row" onclick="filterOsiLayer(5)">
+                    <span class="osi-layer-badge osi-badge-l5">L.5 Sess</span>
+                    <span class="osi-layer-name">Session</span>
+                    <span class="osi-layer-example">RPC Handshake, Session Timeout</span>
+                    <span class="osi-count-pill" style="color: #d97706;">2 Insiden</span>
+                    <span class="badge-status" style="background: rgba(217, 119, 6, 0.12); color: #d97706;">Waspada</span>
+                  </div>
+
+                  <!-- Layer 4: Transport -->
+                  <div class="osi-layer-row" onclick="filterOsiLayer(4)">
+                    <span class="osi-layer-badge osi-badge-l4">L.4 Trans</span>
+                    <span class="osi-layer-name">Transport</span>
+                    <span class="osi-layer-example">TCP Packet Drop, Load Balancer Glitch</span>
+                    <span class="osi-count-pill" style="color: #2563eb;">3 Insiden</span>
+                    <span class="badge-status" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">Waspada</span>
+                  </div>
+
+                  <!-- Layer 3: Network -->
+                  <div class="osi-layer-row" onclick="filterOsiLayer(3)">
+                    <span class="osi-layer-badge osi-badge-l3">L.3 Net</span>
+                    <span class="osi-layer-name">Network</span>
+                    <span class="osi-layer-example">BGP Flapping, Outage Provider ISP</span>
+                    <span class="osi-count-pill" style="color: #4f46e5;">5 Insiden</span>
+                    <span class="badge-status" style="background: rgba(234, 88, 12, 0.12); color: #ea580c;">Siaga</span>
+                  </div>
+
+                  <!-- Layer 2: Data Link -->
+                  <div class="osi-layer-row" onclick="filterOsiLayer(2)">
+                    <span class="osi-layer-badge osi-badge-l2">L.2 Data</span>
+                    <span class="osi-layer-name">Data Link</span>
+                    <span class="osi-layer-example">Switching VLAN, Frame Error, ARP Storm</span>
+                    <span class="osi-count-pill" style="color: #0d9488;">2 Insiden</span>
+                    <span class="badge-status sudah">Rendah</span>
+                  </div>
+
+                  <!-- Layer 1: Physical -->
+                  <div class="osi-layer-row" onclick="filterOsiLayer(1)">
+                    <span class="osi-layer-badge osi-badge-l1">L.1 Phys</span>
+                    <span class="osi-layer-name">Physical</span>
+                    <span class="osi-layer-example">FO Bawah Laut Putus, Blackout Genset/UPS</span>
+                    <span class="osi-count-pill" style="color: #dc2626;">6 Insiden</span>
+                    <span class="badge-status belum">Kritis</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT COLUMN: RISK HEATMAP (Dampak x Likelihood) -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span id="heatmapHeaderTitle">Risk Heatmap (5 x 5)</span>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted);" id="heatmapSubtitle">Dampak x Likelihood</span>
+              </div>
+              <div class="card-body">
+                <div class="heatmap-container">
+                  <div class="heatmap-grid-layout" id="heatmapGrid">
+                    <!-- Populated dynamically by app.js with dots inside each cell -->
+                  </div>
+                  <div class="heatmap-x-labels">
+                    <div>1</div>
+                    <div>2</div>
+                    <div>3</div>
+                    <div>4</div>
+                    <div>5</div>
+                  </div>
+                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <span>Kemungkinan (Likelihood) →</span>
+                    <span style="display: inline-flex; align-items: center; gap: 8px;">
+                      <span style="display:inline-flex; align-items:center; gap:3px;"><span class="incident-dot dot-natural"></span> Natural</span>
+                      <span style="display:inline-flex; align-items:center; gap:3px;"><span class="incident-dot dot-manmade"></span> Man-Made</span>
+                      <span style="display:inline-flex; align-items:center; gap:3px;"><span class="incident-dot dot-tech"></span> Tech</span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Selected Heatmap Cell Detail Panel (Shows KPw / APTK on Click) -->
+                <div id="heatmapSelectedDetail" style="display: none; margin-top: 10px; background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 12px;">
+                  <!-- Populated dynamically on cell click -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ROW 3: CURRENT RESILIENCE STATUS, DISTRIBUSI LEVEL, TABEL KEPATUHAN PKT -->
+          <section class="grid-row-lower" style="margin-top: 16px;">
+            <!-- Current Resilience Status -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span>Status Ketahanan Saat Ini</span>
+                </div>
+                <span class="card-action-link" onclick="openResilienceModal()">
+                  <span>Simulasi</span>
+                  <span>→</span>
+                </span>
+              </div>
+              <div class="card-body">
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between;">
+                  <span>Evaluasi Parameter: <strong>68</strong></span>
+                  <span>Skor Rata-rata: <strong style="color: var(--gold-primary);" id="totalResilienceScore">3.2 / 5.0</strong></span>
+                </div>
+                <div class="gauges-flex">
+                  <!-- SDM -->
+                  <div class="gauge-item">
+                    <div class="gauge-circle-wrap">
+                      <svg viewBox="0 0 36 36">
+                        <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="gauge-fill sdm" id="gaugeFillSDM" stroke-dasharray="72, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                      </svg>
+                      <div class="gauge-center-text" id="gaugeValSDM">72%</div>
+                    </div>
+                    <span class="gauge-label">SDM</span>
+                    <span class="gauge-status" id="badgeSDM" style="background: var(--status-waspada-bg); color: var(--status-waspada);">Waspada</span>
+                  </div>
+
+                  <!-- SDLK -->
+                  <div class="gauge-item">
+                    <div class="gauge-circle-wrap">
+                      <svg viewBox="0 0 36 36">
+                        <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="gauge-fill sdlk" id="gaugeFillSDLK" stroke-dasharray="61, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                      </svg>
+                      <div class="gauge-center-text" id="gaugeValSDLK">61%</div>
+                    </div>
+                    <span class="gauge-label">SDLK</span>
+                    <span class="gauge-status" id="badgeSDLK" style="background: var(--status-waspada-bg); color: var(--status-waspada);">Waspada</span>
+                  </div>
+
+                  <!-- SDTD -->
+                  <div class="gauge-item">
+                    <div class="gauge-circle-wrap">
+                      <svg viewBox="0 0 36 36">
+                        <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="gauge-fill sdtd" id="gaugeFillSDTD" stroke-dasharray="48, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                      </svg>
+                      <div class="gauge-center-text" id="gaugeValSDTD">48%</div>
+                    </div>
+                    <span class="gauge-label">SDTD</span>
+                    <span class="gauge-status" id="badgeSDTD" style="background: var(--status-siaga-bg); color: var(--status-siaga);">Siaga</span>
+                  </div>
+
+                  <!-- Lainnya -->
+                  <div class="gauge-item">
+                    <div class="gauge-circle-wrap">
+                      <svg viewBox="0 0 36 36">
+                        <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="gauge-fill lainnya" id="gaugeFillLainnya" stroke-dasharray="80, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                      </svg>
+                      <div class="gauge-center-text" id="gaugeValLainnya">80%</div>
+                    </div>
+                    <span class="gauge-label">Lainnya</span>
+                    <span class="gauge-status" id="badgeLainnya" style="background: var(--status-stabil-bg); color: var(--status-stabil);">Stabil</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Distribusi Level Saat Ini -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span>Distribusi Level Kantor</span>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted);">47 Entitas BI</span>
+              </div>
+              <div class="card-body">
+                <div class="level-distribution-list">
+                  <!-- Normal Stabil -->
+                  <div class="level-row" onclick="filterByLevel('Normal Stabil')" style="cursor: pointer;" title="Klik untuk memfilter">
+                    <div class="level-info">
+                      <span class="level-badge-pill" style="background: var(--status-stabil);"></span>
+                      <span>Normal Stabil</span>
+                    </div>
+                    <div class="level-count-box">
+                      <strong id="countStabil">21</strong>
+                      <span>(45%)</span>
+                    </div>
+                  </div>
+
+                  <!-- Normal Waspada -->
+                  <div class="level-row" onclick="filterByLevel('Normal Waspada')" style="cursor: pointer;" title="Klik untuk memfilter">
+                    <div class="level-info">
+                      <span class="level-badge-pill" style="background: var(--status-waspada);"></span>
+                      <span>Normal Waspada</span>
+                    </div>
+                    <div class="level-count-box">
+                      <strong id="countWaspada">15</strong>
+                      <span>(32%)</span>
+                    </div>
+                  </div>
+
+                  <!-- Normal Siaga -->
+                  <div class="level-row" onclick="filterByLevel('Normal Siaga')" style="cursor: pointer;" title="Klik untuk memfilter">
+                    <div class="level-info">
+                      <span class="level-badge-pill" style="background: var(--status-siaga);"></span>
+                      <span>Normal Siaga</span>
+                    </div>
+                    <div class="level-count-box">
+                      <strong id="countSiaga">8</strong>
+                      <span>(17%)</span>
+                    </div>
+                  </div>
+
+                  <!-- Ditenggarai Krisis -->
+                  <div class="level-row" onclick="filterByLevel('Ditenggarai Krisis')" style="cursor: pointer;" title="Klik untuk memfilter">
+                    <div class="level-info">
+                      <span class="level-badge-pill" style="background: var(--status-krisis);"></span>
+                      <span>Ditenggarai Krisis</span>
+                    </div>
+                    <div class="level-count-box">
+                      <strong id="countKrisis" style="color: #dc2626;">3</strong>
+                      <span>(6%)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kepatuhan PKT & DRA Quick Overview -->
+            <div class="dashboard-card" id="pktCardSection">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span>Repository PKT & DRA (Quick View)</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <select id="tableYearFilter" class="select-filter" style="padding: 2px 6px; font-size: 11px;" onchange="renderActivePktTab()">
+                    <option value="2026">2026</option>
+                    <option value="2025" selected>2025</option>
+                    <option value="2024">2024</option>
+                  </select>
+                  <select id="tableStatusFilter" class="select-filter" style="padding: 2px 6px; font-size: 11px;" onchange="renderActivePktTab()">
+                    <option value="Semua">Semua</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Belum">Belum</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 3 SUB-TABS PKT -->
+              <div class="pkt-tabs-header">
+                <button class="pkt-tab-btn active" id="tabBtnPelaksana" onclick="switchPktCategory('pelaksana')">
+                  <span>🏛️ Satker Pelaksana</span>
+                  <span class="pkt-tab-badge">8</span>
+                </button>
+                <button class="pkt-tab-btn" id="tabBtnPendukung" onclick="switchPktCategory('pendukung')">
+                  <span>🏢 Satker Pendukung</span>
+                  <span class="pkt-tab-badge">6</span>
+                </button>
+                <button class="pkt-tab-btn" id="tabBtnKPwDN" onclick="switchPktCategory('kpwdn')">
+                  <span>📍 KPwDN Regional</span>
+                  <span class="pkt-tab-badge">46</span>
+                </button>
+              </div>
+
+              <div class="card-body" style="padding-top: 6px;">
+                <div class="table-filter-header">
+                  <input type="text" id="tableSearchBox" class="search-input" placeholder="🔍 Cari Satker, Singkatan, Kota..." oninput="renderActivePktTab()">
+                  <button class="btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="filterOnlyBelum()">
+                    ⚠️ Belum
+                  </button>
+                </div>
+                <div class="table-scroll-wrapper" style="max-height: 220px;">
+                  <table class="styled-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 28px;">No</th>
+                        <th>Satker / Entitas</th>
+                        <th>Kategori</th>
+                        <th>Status</th>
+                        <th style="text-align: center;">Tautan PKT</th>
+                        <th style="text-align: center;">Tautan DRA</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pktTableBody">
+                      <!-- Populated dynamically via app.js -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ROW 4: TOP 5 RISIKO, BCM LAMBDA CURVE (DISRUPTION & CFM TIMELINE), QUICK ACCESS -->
+          <section class="grid-row-bottom" style="margin-top: 16px;">
+            <!-- Top 5 KPwDN / Entitas Risiko Tertinggi -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span id="top5TableTitle">Top 5 Entitas Risiko Tertinggi</span>
+                </div>
+                <span style="font-size: 10.5px; color: var(--text-muted);" id="top5Subtitle">Dampak x Likelihood</span>
+              </div>
+              <div class="card-body" style="padding: 8px 12px; overflow-x: auto;">
+                <table class="styled-table" id="top5Table" style="min-width: 480px;">
+                  <thead id="top5TableHead">
+                    <tr>
+                      <th style="width: 28px;">No</th>
+                      <th>Entitas / KPwDN</th>
+                      <th style="text-align: center;">Insiden</th>
+                      <th style="text-align: center;">Skor</th>
+                      <th style="text-align: center;">Level</th>
+                    </tr>
+                  </thead>
+                  <tbody id="top5TableBody">
+                    <!-- Populated by app.js based on selected subview -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- RIWAYAT INSIDEN (GRAFIK PEMULIHAN BCM & DETAIL INSIDEN) -->
+            <div class="dashboard-card" id="cardRiwayatInsidenDashboard">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span style="font-size: 13.5px; font-weight: 800;">Riwayat Insiden</span>
+                  <span id="lambdaDisasterBadge" style="font-size: 10px; padding: 2px 7px; border-radius: 4px; background: rgba(37, 99, 235, 0.1); color: #2563eb; border: 1px solid rgba(37, 99, 235, 0.25);">
+                    💻 Gangguan Teknologi (RPO & RTO Aktif)
+                  </span>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <select id="selDashboardActiveIncident" class="select-filter" style="padding: 3px 8px; font-size: 11px; max-width: 220px;" onchange="onDashboardActiveIncidentChange(this.value)">
+                    <!-- Populated dynamically via app.js -->
+                  </select>
+                  <button class="btn-primary" style="padding: 3px 10px; font-size: 11px; white-space: nowrap;" onclick="openActiveIncidentDetailModal()" title="Buka Pop-Up Detail Insiden & Penanganan BCM">
+                    <span>🚨 Pop-Up Detail Insiden</span>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="bcm-lambda-wrapper">
+                  <!-- Interactive Canvas for Lambda Curve -->
+                  <div class="lambda-chart-container" style="cursor: pointer;" onclick="openActiveIncidentDetailModal()" title="Klik grafik untuk membuka Pop-Up Detail Insiden & Penanganan BCM">
+                    <canvas id="bcmLambdaCanvas" class="lambda-canvas"></canvas>
+                  </div>
+
+                  <!-- BCM Markers Legend -->
+                  <div class="bcm-curve-legend">
+                    <div class="bcm-legend-pill">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: #dc2626; display: inline-block;"></span>
+                      <span>t₀ Insiden: <strong id="lblStartTime">08:15 WIB</strong></span>
+                    </div>
+                    <div class="bcm-legend-pill" id="pillRpo">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                      <span>RPO: <strong id="lblRpo">5 Menit Data Loss</strong></span>
+                    </div>
+                    <div class="bcm-legend-pill" id="pillRto">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: #d97706; display: inline-block;"></span>
+                      <span>RTO: <strong id="lblRto">4 Jam Target</strong></span>
+                    </div>
+                    <div class="bcm-legend-pill">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: #ea580c; display: inline-block;"></span>
+                      <span>MTPD: <strong id="lblMtpd">6 Jam Kritis</strong></span>
+                    </div>
+                    <div class="bcm-legend-pill">
+                      <span class="cfm-badge-tag">📢 CFM (<span id="lblCfmCount">3</span> Rapat)</span>
+                    </div>
+                    <div class="bcm-legend-pill">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: #2563eb; display: inline-block;"></span>
+                      <span>Normal: <strong id="lblRecoverTime">12:15 WIB</strong></span>
+                    </div>
+                  </div>
+
+                  <!-- BCM Workflow Documents -->
+                  <div>
+                    <div class="bcm-docs-title">Dokumen Kelengkapan Insiden & BCM Terkait:</div>
+                    <div class="bcm-docs-row" style="margin-top: 6px;">
+                      <button class="doc-pill-btn" onclick="previewDoc('Draft Berita Acara')">
+                        <span>📄</span>
+                        <span>Draft Berita Acara</span>
+                      </button>
+                      <button class="doc-pill-btn" onclick="previewDoc('Format Pelaporan WA')">
+                        <span>💬</span>
+                        <span>Format Pelaporan WA</span>
+                      </button>
+                      <button class="doc-pill-btn" onclick="previewDoc('Memorandum')">
+                        <span>📑</span>
+                        <span>Memorandum</span>
+                      </button>
+                      <button class="doc-pill-btn" onclick="previewDoc('Risalah Rapat')">
+                        <span>📝</span>
+                        <span>Risalah Rapat</span>
+                      </button>
+                      <button class="doc-pill-btn" onclick="previewDoc('Laporan Penyelesaian')">
+                        <span>📊</span>
+                        <span>Laporan Penyelesaian</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Access -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span class="gold-dot"></span>
+                  <span>Akses Cepat</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="quick-access-list">
+                  <button class="quick-btn" onclick="openEmergencyEmailModal()">
+                    <span class="btn-icon">📧</span>
+                    <span>Emergency Email & Kontak</span>
+                  </button>
+                  <button class="quick-btn" onclick="openNewIncidentModal()">
+                    <span class="btn-icon">➕</span>
+                    <span>Catat Insiden Baru</span>
+                  </button>
+                  <button class="quick-btn" onclick="openBcmCurveModal()">
+                    <span class="btn-icon">📢</span>
+                    <span>Call For Meeting (CFM)</span>
+                  </button>
+                  <button class="quick-btn" onclick="switchMainView('pkt')">
+                    <span class="btn-icon">📁</span>
+                    <span>Repository PKT & DRA</span>
+                  </button>
+                  <button class="quick-btn" onclick="switchMainView('respon-cepat')">
+                    <span class="btn-icon">📋</span>
+                    <span>Panduan Respon Cepat</span>
+                  </button>
+                  <button class="quick-btn" onclick="openResilienceModal()">
+                    <span class="btn-icon">⚡</span>
+                    <span>Simulasi Resiliensi</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 2: DASHBOARD PROFIL WILAYAH (KP & 46 KPW - FOTO & 4 PILAR)
+             =================================================================== -->
+        <section id="viewProfilWilayah" class="view-section">
+          <!-- Toolbar Header -->
+          <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 style="font-size: 16px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                  <span>🏛️</span>
+                  <span>Dashboard Profil Wilayah (Kantor Pusat & 46 KPwDN)</span>
+                </h2>
+                <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">
+                  Galeri Foto Gedung, Asesmen Potensi Kerentanan Bencana (InaRisk), Alternatif KPw Terdekat (Jarak Haversine), Evaluasi 4 Pilar (SDM, SDLK, SDTD, Riwayat), dan Tautan Dokumen (PKT, DRA, BCS).
+                </p>
+              </div>
+
+              <!-- Filter & Search Controls -->
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="profilSearchInput" class="search-input" style="min-width: 260px;" placeholder="🔍 Cari KPw, Kota, atau Bencana (banjir, gempa, erupsi...)" oninput="renderRegionDirectory()">
+                
+                <select id="profilRegionFilter" class="select-filter" onchange="renderRegionDirectory()">
+                  <option value="Semua">Semua Wilayah</option>
+                  <option value="Sumatera">Sumatera</option>
+                  <option value="Jawa">Jawa</option>
+                  <option value="Kalimantan">Kalimantan</option>
+                  <option value="Bali & Nusa Tenggara">Bali & Nusa Tenggara</option>
+                  <option value="Sulawesi, Maluku, & Papua">Sulawesi, Maluku, & Papua</option>
+                </select>
+
+                <select id="profilSortFilter" class="select-filter" onchange="renderRegionDirectory()">
+                  <option value="name">Urut: Nama Kantor</option>
+                  <option value="scoreDesc">Skor Kesiapan: Tertinggi</option>
+                  <option value="scoreAsc">Skor Kesiapan: Terendah</option>
+                  <option value="risk">Tingkat Risiko Bencana</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Quick Disaster Vulnerability Filter Chips -->
+            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-light); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                <span>🎯</span>
+                <span>Filter Cepat Kerentanan Bencana:</span>
+              </span>
+              <div class="hazard-filter-chips" id="hazardFilterChips">
+                <button class="h-chip active" id="chipHazard-Semua" onclick="filterByHazard('Semua')">Semua Bencana</button>
+                <button class="h-chip" id="chipHazard-Banjir" onclick="filterByHazard('Banjir')">🌊 Banjir</button>
+                <button class="h-chip" id="chipHazard-Gempa" onclick="filterByHazard('Gempa')">🌋 Gempa Bumi</button>
+                <button class="h-chip" id="chipHazard-Tsunami" onclick="filterByHazard('Tsunami')">🌊 Tsunami</button>
+                <button class="h-chip" id="chipHazard-Erupsi" onclick="filterByHazard('Erupsi')">🗻 Erupsi Gunung</button>
+                <button class="h-chip" id="chipHazard-Cuaca" onclick="filterByHazard('Cuaca')">🌪️ Cuaca Ekstrem</button>
+                <button class="h-chip" id="chipHazard-Karhutla" onclick="filterByHazard('Karhutla')">🔥 Karhutla</button>
+                <button class="h-chip" id="chipHazard-Longsor" onclick="filterByHazard('Longsor')">⛰️ Tanah Longsor</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Region Directory Cards Grid with Photos -->
+          <div id="regionDirectoryGrid" class="region-directory-grid">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 3: PANDUAN RESPON CEPAT (3 BAGIAN)
+             =================================================================== -->
+        <section id="viewResponCepat" class="view-section">
+          <!-- Toolbar Header -->
+          <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 style="font-size: 16px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                  <span>📋</span>
+                  <span>Panduan Respon Cepat (Quick Response Management)</span>
+                </h2>
+                <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">
+                  Terdiri dari 3 Bagian: (1) Katalog Icon Panduan Bencana Komprehensif, (2) Ketentuan 4 Level Status (Editable), dan (3) Template Dokumen Resmi BCM.
+                </p>
+              </div>
+
+              <!-- Filter Pills for Disaster Types -->
+              <div style="display: flex; gap: 6px;">
+                <button class="subnav-btn active" id="flyerFilterAll" onclick="filterFlyers('Semua')">Semua Bencana</button>
+                <button class="subnav-btn" id="flyerFilterNatural" onclick="filterFlyers('Natural Disaster')">🌊 Natural</button>
+                <button class="subnav-btn" id="flyerFilterManMade" onclick="filterFlyers('Man Made Disaster')">👥 Man-Made</button>
+                <button class="subnav-btn" id="flyerFilterTech" onclick="filterFlyers('Technology Disaster')">💻 Technology</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BAGIAN 1: GRID DEPAN SEDERHANA (HANYA ICON + NAMA BENCANA) -->
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <div>
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+                  <span>📌</span>
+                  <span>Bagian 1: Panduan Tanggap Darurat per Bencana</span>
+                </h3>
+                <span style="font-size: 11px; color: var(--text-muted);">Klik pada salah satu ikon bencana untuk membuka Panduan Cepat, SOP 3 Tahap, Flyer, Juknis, PKT Pendukung, & Video Edukasi.</span>
+              </div>
+            </div>
+
+            <!-- Simple Icon Grid -->
+            <div id="disasterIconGrid" class="disaster-icon-grid">
+              <!-- Populated dynamically via app.js -->
+            </div>
+          </div>
+
+          <!-- BAGIAN 2: KETENTUAN STATUS (4 LEVEL - EDITABLE) -->
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <div>
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+                  <span>⚙️</span>
+                  <span>Bagian 2: Ketentuan & Parameter Penetapan Status (4 Level)</span>
+                </h3>
+                <span style="font-size: 11px; color: var(--text-muted);">Pedoman aktivasi level status ketahanan berdasarkan parameter SDM, SDLK, dan SDTD.</span>
+              </div>
+              <button class="btn-secondary" style="padding: 4px 12px; font-size: 11px;" onclick="openEditStatusRulesModal()">
+                <span>✏️</span>
+                <span>Edit Ketentuan Status</span>
+              </button>
+            </div>
+
+            <div class="status-rules-grid" id="statusRulesContainer">
+              <!-- Populated dynamically via app.js -->
+            </div>
+          </div>
+
+          <!-- BAGIAN 3: TEMPLATE DOKUMEN RESMI BCM -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <div>
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+                  <span>📄</span>
+                  <span>Bagian 3: Template Dokumen Resmi Kelangsungan Tugas & BCM</span>
+                </h3>
+                <span style="font-size: 11px; color: var(--text-muted);">Format baku deklarasi status, berita acara, permohonan alternate office, WhatsApp report, memorandum, dan risalah rapat.</span>
+              </div>
+            </div>
+
+            <div class="template-docs-grid" id="templateDocsContainer">
+              <!-- Populated dynamically via app.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 4: INCIDENT REPORT MANAGEMENT
+             =================================================================== -->
+        <section id="viewIncidentReport" class="view-section">
+          <!-- Header & Stats Overview -->
+          <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 style="font-size: 16px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                  <span>🚨</span>
+                  <span>Incident Report Management</span>
+                </h2>
+                <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">
+                  Pencatatan dan pemantauan riwayat insiden seluruh kantor Bank Indonesia. Saat kategori Technology Disaster dipilih, matriks kerentanan vs dampak 24 APTK akan aktif otomatis.
+                </p>
+              </div>
+
+              <button class="btn-primary" onclick="openNewIncidentModal()">
+                <span>➕</span>
+                <span>Catat Insiden Baru</span>
+              </button>
+            </div>
+
+            <!-- Mini stats bar -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-light);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">📋</span>
+                <div>
+                  <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 700;">TOTAL INSIDEN</div>
+                  <div style="font-size: 17px; font-weight: 800; color: var(--text-dark);" id="statTotalIncidents">12</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">🔴</span>
+                <div>
+                  <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 700;">INSIDEN OPEN (AKTIF)</div>
+                  <div style="font-size: 17px; font-weight: 800; color: #dc2626;" id="statOpenIncidents">3</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">🟢</span>
+                <div>
+                  <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 700;">INSIDEN CLOSED (SELESAI)</div>
+                  <div style="font-size: 17px; font-weight: 800; color: #10b981;" id="statClosedIncidents">9</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">⏱️</span>
+                <div>
+                  <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 700;">RATA-RATA RECOVERY</div>
+                  <div style="font-size: 17px; font-weight: 800; color: var(--gold-primary);">3 Jam 15 Menit</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- INCIDENT HISTORY TABLE WITH SORTING & STATUS TOGGLE -->
+          <div class="dashboard-card" style="margin-bottom: 20px;">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="gold-dot"></span>
+                <span>Tabel Riwayat Insiden & Penanganan BCM</span>
+              </div>
+
+              <!-- Filters for Incident Table -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="text" id="incTableSearch" class="search-input" style="padding: 4px 10px; font-size: 11px;" placeholder="🔍 Cari ID, Satker, atau Bencana..." oninput="renderIncidentTable()">
+                <select id="incStatusFilter" class="select-filter" style="padding: 4px 8px; font-size: 11px;" onchange="renderIncidentTable()">
+                  <option value="Semua">Semua Status</option>
+                  <option value="OPEN">🔴 Status OPEN</option>
+                  <option value="CLOSED">🟢 Status CLOSED</option>
+                </select>
+                <!-- Dynamic Category Filter that controls APTK matrix visibility -->
+                <select id="incCategoryFilter" class="select-filter" style="padding: 4px 8px; font-size: 11px;" onchange="onIncidentCategoryFilterChange()">
+                  <option value="Semua">Semua Kategori</option>
+                  <option value="Natural Disaster">🌊 Natural Disaster</option>
+                  <option value="Man Made Disaster">👥 Man Made Disaster</option>
+                  <option value="Technology Disaster">💻 Technology Disaster</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card-body" style="padding: 6px 14px;">
+              <div class="table-scroll-wrapper" style="max-height: 400px;">
+                <table class="styled-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 30px;">No</th>
+                      <th class="sortable-th" onclick="sortIncidentTable('id')">ID & Waktu ⇅</th>
+                      <th class="sortable-th" onclick="sortIncidentTable('satker')">Satker / Lokasi ⇅</th>
+                      <th class="sortable-th" onclick="sortIncidentTable('disaster')">Kategori ⇅</th>
+                      <th>Kejadian / Bencana</th>
+                      <th>APTK Terkait</th>
+                      <th class="sortable-th" onclick="sortIncidentTable('duration')">Waktu Berjalan (Detik) ⇅</th>
+                      <th style="text-align: center;">Status</th>
+                      <th style="text-align: center;">Riwayat Insiden & Kurva BCM</th>
+                      <th>Root Cause / Tindak Lanjut</th>
+                      <th style="text-align: center;">Tautan OneDrive</th>
+                      <th style="text-align: center;">Pop-Up Detail</th>
+                    </tr>
+                  </thead>
+                  <tbody id="incidentTableBody">
+                    <!-- Populated dynamically via app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 24 APTK RISK & VULNERABILITY MATRIX (ONLY DISPLAYED IF TECHNOLOGY DISASTER SELECTED) -->
+          <div class="dashboard-card" id="aptkMatrixWrapper" style="display: none;">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="gold-dot"></span>
+                <span>Matriks Kerentanan vs Dampak Operasional 24 APTK (Aplikasi Pendukung Tugas Kritikal)</span>
+              </div>
+              <span style="font-size: 11px; font-weight: 700; color: #2563eb;">
+                Tier 1 (Mission Critical) • Tier 2 (Business Critical) • Tier 3 (Operational Support)
+              </span>
+            </div>
+
+            <div class="card-body">
+              <div class="aptk-matrix-container">
+                <!-- Left: 2D Scatter Matrix Canvas -->
+                <div class="aptk-chart-box">
+                  <div style="font-size: 11px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; display: flex; justify-content: space-between;">
+                    <span>Kuadran Kerentanan (X) vs Dampak Operasional (Y)</span>
+                    <span style="color: var(--text-muted); font-size: 10px;">💡 Klik titik aplikasi untuk melihat rincian</span>
+                  </div>
+                  <div class="aptk-canvas-wrap">
+                    <canvas id="aptkMatrixCanvas" style="width: 100%; height: 320px;"></canvas>
+                  </div>
+                </div>
+
+                <!-- Right: Interactive List & Selected APTK Details -->
+                <div class="aptk-list-box">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <strong style="font-size: 12px; color: var(--text-dark);">Daftar 24 Aplikasi APTK:</strong>
+                    <input type="text" id="searchAptkList" class="search-input" style="padding: 2px 8px; font-size: 10.5px; max-width: 130px;" placeholder="Cari APTK..." oninput="filterAptkList()">
+                  </div>
+
+                  <!-- Selected APTK Highlight Banner -->
+                  <div id="selectedAptkBanner" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 10px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <strong style="color: var(--text-dark); font-size: 13px;" id="aptkBannerName">BI-RTGS</strong>
+                      <span class="aptk-badge-tier aptk-tier-1" id="aptkBannerTier">Tier 1 • Mission Critical</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-body); margin-top: 4px;" id="aptkBannerDesc">Real-Time Gross Settlement — Pemrosesan setelmen transaksi keuangan nilai besar antar bank secara seketika.</div>
+                    <div style="display: flex; gap: 12px; font-size: 10.5px; color: var(--text-muted); margin-top: 6px;">
+                      <span>RTO: <strong style="color: #d97706;" id="aptkBannerRto">30 Menit</strong></span>
+                      <span>RPO: <strong style="color: #10b981;" id="aptkBannerRpo">0 Menit (Zero Loss)</strong></span>
+                      <span>Dampak: <strong style="color: #dc2626;" id="aptkBannerImpact">5 / 5</strong></span>
+                    </div>
+                  </div>
+
+                  <!-- APTK 24 Scrollable Items -->
+                  <div id="aptkItemsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto;">
+                    <!-- Populated dynamically via app.js -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 5: REPOSITORY PKT & DRA (FULL DEDICATED VIEW)
+             =================================================================== -->
+        <section id="viewRepositoryPkt" class="view-section">
+          <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
+            <h2 style="font-size: 16px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+              <span>📁</span>
+              <span>Repository Dokumen PKT & DRA (Bank Indonesia)</span>
+            </h2>
+            <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">
+              Kumpulan berkas Pedoman Kelangsungan Tugas (PKT) dan Disaster Risk Assessment (DRA) seluruh Satker Pelaksana (8 Satker), Satker Pendukung (6 Satker), dan 46 KPwDN. Setiap entitas dilengkapi 2 tautan terpisah ke folder OneDrive yang dapat dikustomisasi.
+            </p>
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-header">
+              <!-- 3 Sub Tabs -->
+              <div class="pkt-tabs-header" style="border-bottom: none; padding: 0;">
+                <button class="pkt-tab-btn active" id="tabBtnPelaksanaFull" onclick="switchPktCategory('pelaksana')">
+                  <span>🏛️ Satker Pelaksana (8)</span>
+                </button>
+                <button class="pkt-tab-btn" id="tabBtnPendukungFull" onclick="switchPktCategory('pendukung')">
+                  <span>🏢 Satker Pendukung (6)</span>
+                </button>
+                <button class="pkt-tab-btn" id="tabBtnKPwDNFull" onclick="switchPktCategory('kpwdn')">
+                  <span>📍 KPwDN Regional (46)</span>
+                </button>
+              </div>
+
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="pktFullSearch" class="search-input" style="padding: 4px 10px; font-size: 11px;" placeholder="🔍 Cari Satker / Kota..." oninput="syncPktSearch(this.value)">
+                <button class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="filterOnlyBelum()">
+                  ⚠️ Filter Belum Kumpul
+                </button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="table-scroll-wrapper" style="max-height: 520px;">
+                <table class="styled-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 32px;">No</th>
+                      <th>Satker / Departemen / Wilayah</th>
+                      <th>Kategori</th>
+                      <th>Tahun</th>
+                      <th>Status PKT</th>
+                      <th style="text-align: center;">📁 Tautan PKT (OneDrive)</th>
+                      <th style="text-align: center;">🛡️ Tautan DRA (OneDrive)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pktTableBodyFull">
+                    <!-- Populated dynamically via app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       MODALS
+       ========================================================================= -->
+
+  <!-- MODAL: DETAIL PROFIL WILAYAH (4 PILAR: SDM, SDLK, SDTD, RIWAYAT INSIDEN) -->
+  <div class="modal-overlay" id="modalDetailProfil">
+    <div class="modal-box" style="max-width: 820px;">
+      <div class="modal-header">
+        <h3 id="profilModalTitle"><span>🏛️</span> Detail Profil Wilayah: KPwBI Provinsi Sulawesi Selatan</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalDetailProfil')">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Office Overview Banner with Photo -->
+        <div style="display: grid; grid-template-columns: 140px 1fr 140px; gap: 14px; background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; align-items: center;">
+          <div style="width: 140px; height: 95px; border-radius: var(--radius-sm); overflow: hidden; background: #09172d;">
+            <img id="pmOfficePhoto" src="" alt="Foto Gedung" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div>
+            <div style="font-size: 10px; color: var(--gold-primary); font-weight: 800; text-transform: uppercase;">Informasi Kantor:</div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-dark); margin-top: 2px;" id="pmOfficeName">KPwBI Provinsi Sulawesi Selatan</div>
+            <div style="font-size: 11.5px; color: var(--text-body); margin-top: 2px;" id="pmOfficeCity">Kota Makassar • Wilayah Sulawesi, Maluku, & Papua</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="pmOfficeCoord">Koordinat GPS: -5.1384, 119.4109 • Status: Koordinator Wilayah</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid var(--border-light); padding-left: 10px;">
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">KESIAPAN BCM</div>
+            <div style="font-size: 24px; font-weight: 900; color: var(--gold-primary);" id="pmReadinessScore">88%</div>
+            <span class="badge-status sudah" id="pmReadinessBadge">Tingkat Tinggi</span>
+          </div>
+        </div>
+
+        <!-- NAVIGATION TABS: PROFIL, SDM, SDLK, SDTD, RIWAYAT INSIDEN -->
+        <div class="pillar-tabs-nav">
+          <button class="pillar-tab-btn active" id="ptabBtnProfil" onclick="switchPillarTab('profil')">
+            <span>🏛️</span>
+            <span>Profil</span>
+          </button>
+          <button class="pillar-tab-btn" id="ptabBtnSdm" onclick="switchPillarTab('sdm')">
+            <span>👥</span>
+            <span>SDM</span>
+          </button>
+          <button class="pillar-tab-btn" id="ptabBtnSdlk" onclick="switchPillarTab('sdlk')">
+            <span>🏢</span>
+            <span>SDLK</span>
+          </button>
+          <button class="pillar-tab-btn" id="ptabBtnSdtd" onclick="switchPillarTab('sdtd')">
+            <span>💻</span>
+            <span>SDTD</span>
+          </button>
+          <button class="pillar-tab-btn" id="ptabBtnRiwayat" onclick="switchPillarTab('riwayat')">
+            <span>🚨</span>
+            <span>Riwayat Insiden</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: PROFIL (ALAMAT, KERENTANAN BENCANA, LKA ALTERNATIF, KPW TERDEKAT, STATUS SAAT INI, GOOGLE MAPS) -->
+        <div class="pillar-content-panel active" id="panelPillarProfil">
+          <div class="profil-info-grid">
+            <div class="profil-info-card" style="grid-column: 1 / -1;">
+              <label>📍 Alamat Lengkap Gedung Kantor:</label>
+              <div class="value" id="pmAlamatLengkap">Jl. Jend. Sudirman No. 24, Makassar, Sulawesi Selatan 90111</div>
+            </div>
+            <div class="profil-info-card">
+              <label>⚠️ Risiko Kerentanan Bencana (InaRisk BNPB):</label>
+              <div class="value" id="pmKerentananBencana">Gempa Bumi (Sedang), Banjir Genangan (Tinggi), Cuaca Ekstrem (Sedang)</div>
+            </div>
+            <div class="profil-info-card">
+              <label>🏢 Lokasi Kerja Alternatif (LKA Cadangan):</label>
+              <div class="value" id="pmLkaAlternatif">Alternate Office Bappeda Prov. Sulsel / Gedung Diklat BI Makassar</div>
+            </div>
+            <div class="profil-info-card">
+              <label>📍 KPw Terdekat (Sinergi Kontinjensi BCM):</label>
+              <div class="value" id="pmKpwTerdekat">KPwBI Provinsi Sulawesi Barat (Mamuju) • 280 km</div>
+            </div>
+            <div class="profil-info-card">
+              <label>🛡️ Status KPw Saat Ini:</label>
+              <div class="value" id="pmStatusSaatIni">
+                <span class="badge-status stabil">🟢 Normal Stabil</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid var(--border-light); padding: 10px 14px; border-radius: var(--radius-sm);">
+            <div>
+              <strong style="font-size: 11.5px; color: var(--text-dark); display: block;">Navigasi Lokasi Geografis & Peta Presisi:</strong>
+              <span style="font-size: 10.5px; color: var(--text-muted);">Buka koordinat dan lokasi fisik kantor di Google Maps</span>
+            </div>
+            <a id="pmGmapsBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn-gmaps-link" style="padding: 5px 12px; font-size: 11px;">
+              <span>🗺️ Buka di Google Maps ↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- TAB 2: SDM -->
+        <div class="pillar-content-panel" id="panelPillarSdm">
+          <div class="pillar-stats-grid">
+            <div class="pillar-stat-card">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Pegawai Tetap Organik</span>
+              <strong id="pmSdmOrganik">148 Orang</strong>
+              <div style="font-size: 10px; color: #10b981; margin-top: 2px;">Kesiapan: 98% Aktif</div>
+            </div>
+            <div class="pillar-stat-card">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Petugas SP PUR</span>
+              <strong id="pmSdmPur">42 Orang</strong>
+              <div style="font-size: 10px; color: #2563eb; margin-top: 2px;">Sistem Pembayaran Rupiah</div>
+            </div>
+            <div class="pillar-stat-card">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Kas / Khazanah & Sekuriti</span>
+              <strong id="pmSdmKas">28 Personel</strong>
+              <div style="font-size: 10px; color: var(--gold-primary); margin-top: 2px;">Pengamanan 24/7 Siaga</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); background: #f8fafc; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+            💡 <strong>Ketentuan SDM BCM:</strong> Minimal 30% petugas operasional kritikal wajib siap mobilisasi ke Alternate Office dalam waktu maksimal 2 jam setelah status Siaga dideklarasikan.
+          </div>
+        </div>
+
+        <!-- PILAR 2: SDLK (SARPRAS DENGAN KOLOM TANGGAL UPDATE INFORMASI) -->
+        <div class="pillar-content-panel" id="panelPillarSdlk">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <strong style="font-size: 12px; color: var(--text-dark);">Tabel Sarana & Prasarana Kesiapan (Dapat Diedit Langsung):</strong>
+            <button class="btn-secondary" style="padding: 2px 8px; font-size: 10.5px;" onclick="addSarprasRow()">➕ Tambah Sarpras</button>
+          </div>
+          <div class="table-scroll-wrapper" style="max-height: 200px;">
+            <table class="styled-table" id="tableSarpras">
+              <thead>
+                <tr>
+                  <th style="width: 25px;">No</th>
+                  <th>Nama Barang / Aset</th>
+                  <th>Jumlah / Kapasitas</th>
+                  <th>Deskripsi & Kondisi</th>
+                  <th>Tanggal Update Informasi</th>
+                  <th style="width: 40px; text-align: center;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="sarprasTableBody">
+                <!-- Populated via JS with editable rows -->
+              </tbody>
+            </table>
+          </div>
+          <div style="text-align: right; margin-top: 8px;">
+            <button class="btn-primary" style="padding: 4px 12px; font-size: 11px;" onclick="saveSarprasTable()">
+              💾 Simpan Perubahan Sarpras ke LocalStorage
+            </button>
+          </div>
+        </div>
+
+        <!-- PILAR 3: SDTD (SUMBER DAYA TEKNOLOGI DIGITAL) -->
+        <div class="pillar-content-panel" id="panelPillarSdtd">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px;">
+              <strong style="font-size: 11.5px; color: var(--text-dark); display: block; margin-bottom: 6px;">🌐 Koneksi Jaringan & Leased-Line:</strong>
+              <div style="font-size: 11px; color: var(--text-body); line-height: 1.6;" id="pmSdtdNetwork">
+                • <strong>FO Utama:</strong> Leased-Line Telkom Metro-E (100 Mbps, Latency < 12ms)<br>
+                • <strong>Link Cadangan:</strong> VSAT Ku-Band 20 Mbps & Starlink Low-Latency<br>
+                • <strong>Redundansi Router:</strong> Dual Cisco ASR 1000 HSRP Auto-Failover
+              </div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px;">
+              <strong style="font-size: 11.5px; color: var(--text-dark); display: block; margin-bottom: 6px;">🏢 Replikasi Data Center & DRC Sinergi:</strong>
+              <div style="font-size: 11px; color: var(--text-body); line-height: 1.6;" id="pmSdtdDrc">
+                • <strong>Replikasi Data:</strong> Sinkronisasi Real-Time ke DRC Sinergi Karawang<br>
+                • <strong>Sistem Terkoneksi:</strong> BI-RTGS, BI-FAST, SKNBI, CBS<br>
+                • <strong>Waktu Failover Teruji:</strong> 12 Menit (Memenuhi Target RTO 30M)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PILAR 4: RIWAYAT INSIDEN KANTOR INI -->
+        <div class="pillar-content-panel" id="panelPillarRiwayat">
+          <div class="table-scroll-wrapper" style="max-height: 180px;">
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>ID Insiden</th>
+                  <th>Waktu</th>
+                  <th>Kategori</th>
+                  <th>Kejadian</th>
+                  <th>Durasi RTO</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="pmIncidentsHistoryBody">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAUTAN TRISULA DOKUMEN ONEDRIVE (PKT, DRA, BCS) -->
+        <div style="border-top: 1px solid var(--border-light); padding-top: 12px; margin-top: 10px;">
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">
+            📑 Dokumen BCM Terhubung OneDrive Pribadi:
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <!-- PKT -->
+            <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <strong style="font-size: 12px; color: var(--text-dark);">📁 PKT</strong>
+                <button class="action-edit-btn" onclick="editSingleBcmLink('pkt')" title="Edit Link OneDrive PKT">✏️</button>
+              </div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin: 3px 0 6px 0;">Pedoman Kelangsungan Tugas</div>
+              <a id="linkDocPkt" href="#" target="_blank" rel="noopener noreferrer" class="action-link-btn" style="justify-content: center; width: 100%;">
+                <span>🔗 Buka PKT</span>
+              </a>
+            </div>
+
+            <!-- DRA -->
+            <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <strong style="font-size: 12px; color: var(--text-dark);">🛡️ DRA</strong>
+                <button class="action-edit-btn" onclick="editSingleBcmLink('dra')" title="Edit Link OneDrive DRA">✏️</button>
+              </div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin: 3px 0 6px 0;">Disaster Risk Assessment</div>
+              <a id="linkDocDra" href="#" target="_blank" rel="noopener noreferrer" class="action-link-btn" style="justify-content: center; width: 100%;">
+                <span>🔗 Buka DRA</span>
+              </a>
+            </div>
+
+            <!-- BCS -->
+            <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <strong style="font-size: 12px; color: var(--text-dark);">📋 BCS</strong>
+                <button class="action-edit-btn" onclick="editSingleBcmLink('bcs')" title="Edit Link OneDrive BCS">✏️</button>
+              </div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin: 3px 0 6px 0;">Business Continuity Strategy</div>
+              <a id="linkDocBcs" href="#" target="_blank" rel="noopener noreferrer" class="action-link-btn" style="justify-content: center; width: 100%;">
+                <span>🔗 Buka BCS</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modalDetailProfil')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: KOMPREHENSIF PANDUAN RESPON CEPAT (BAGIAN 1) -->
+  <div class="modal-overlay" id="modalComprehensiveGuide">
+    <div class="modal-box" style="max-width: 760px;">
+      <div class="modal-header">
+        <h3 id="compGuideTitle"><span>🌊</span> Panduan Respon Cepat & SOP Bencana</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalComprehensiveGuide')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 14px;">
+          <div>
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">KATEGORI BENCANA:</div>
+            <strong style="font-size: 13px; color: var(--text-dark);" id="compGuideCategory">Natural Disaster</strong>
+          </div>
+          <span class="badge-status sudah" id="compGuideBadge">Standar Operasional Bank Indonesia</span>
+        </div>
+
+        <!-- 1. Panduan Cepat Tanggap Darurat -->
+        <div style="background: #ffffff; border: 1px solid var(--border-light); border-left: 4px solid var(--gold-primary); border-radius: var(--radius-sm); padding: 12px;">
+          <strong style="font-size: 12px; color: var(--text-dark); display: block; margin-bottom: 4px;">⚡ Panduan Cepat Tanggap Darurat (Golden Time):</strong>
+          <p style="font-size: 11.5px; color: var(--text-body); line-height: 1.5;" id="compGuideQuickAction">
+            Prioritaskan keselamatan jiwa seluruh pegawai. Jangan panik, ikuti jalur evakuasi menuju Assembly Point. Hubungi koordinator BCM dalam 15 menit pertama.
+          </p>
+        </div>
+
+        <!-- 2. SOP 3 Fase (Sebelum, Saat, Setelah) -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <strong style="font-size: 12px; color: var(--text-dark);">🛡️ Standar Operasional Prosedur (SOP 3 Tahap):</strong>
+          
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 10px;">
+            <strong style="font-size: 11px; color: #166534;">Tahap 1: Sebelum Bencana (Preventive & Kesiapsiagaan)</strong>
+            <div style="font-size: 11px; color: #14532d; margin-top: 3px;" id="compGuidePre">Inspeksi sarpras berkala.</div>
+          </div>
+
+          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 10px;">
+            <strong style="font-size: 11px; color: #991b1b;">Tahap 2: Saat Kejadian (Tanggap Darurat & Evakuasi)</strong>
+            <div style="font-size: 11px; color: #7f1d1d; margin-top: 3px;" id="compGuideDuring">Evakuasi aman dan aktivasi BCM.</div>
+          </div>
+
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 10px;">
+            <strong style="font-size: 11px; color: #1e40af;">Tahap 3: Setelah Kejadian (Pemulihan & Kontinjensi)</strong>
+            <div style="font-size: 11px; color: #1e3a8a; margin-top: 3px;" id="compGuidePost">Pelaporan resmi dan recovery layanan.</div>
+          </div>
+        </div>
+
+        <!-- 3, 4, 5, 6: Flyer, Juknis, PKT Pendukung, Link Video -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+          <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+              <span>🖼️</span> <span>Flyer Digital & Juknis Teknis</span>
+            </div>
+            <p style="font-size: 10.5px; color: var(--text-muted); margin-top: 3px;" id="compGuideJuknisText">
+              Infografis ringkas dan Petunjuk Teknis Pelaksanaan Operasional Lapangan.
+            </p>
+            <a id="compGuideFlyerLink" href="#" target="_blank" rel="noopener noreferrer" class="action-link-btn" style="margin-top: 6px; display: inline-flex;">
+              <span>🔗 Buka Flyer di OneDrive</span>
+            </a>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+              <span>🏢</span> <span>PKT Satker Pendukung & Video</span>
+            </div>
+            <p style="font-size: 10.5px; color: var(--text-muted); margin-top: 3px;" id="compGuideVideoText">
+              Tautan PKT Satker Pendukung (DLAF, DLDS, DSDM) dan Video Simulasi Tanggap Darurat.
+            </p>
+            <a id="compGuideVideoLink" href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" class="action-link-btn" style="margin-top: 6px; display: inline-flex;">
+              <span>🎬 Tonton Video Edukasi</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modalComprehensiveGuide')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT KETENTUAN STATUS (BAGIAN 2) -->
+  <div class="modal-overlay" id="modalEditStatusRules">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3><span>✏️</span> Edit Parameter Ketentuan Status (4 Level)</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalEditStatusRules')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label style="color: var(--status-stabil);">🟢 Parameter Status Normal:</label>
+          <textarea id="ruleInputNormal" class="form-textarea" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label style="color: var(--status-waspada);">🟡 Parameter Status Normal - Waspada:</label>
+          <textarea id="ruleInputWaspada" class="form-textarea" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label style="color: var(--status-siaga);">🟠 Parameter Status Normal - Siaga:</label>
+          <textarea id="ruleInputSiaga" class="form-textarea" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label style="color: var(--status-krisis);">🔴 Parameter Status Ditenggarai Krisis:</label>
+          <textarea id="ruleInputKrisis" class="form-textarea" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modalEditStatusRules')">Batal</button>
+        <button class="btn-primary" onclick="saveStatusRules()">💾 Simpan Ketentuan Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CATAT INSIDEN BARU -->
+  <div class="modal-overlay" id="modalNewIncident">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><span>🚨</span> Catat Insiden & Konfigurasi BCM</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalNewIncident')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Satuan Kerja / Entitas Terdampak</label>
+          <select id="inputIncSatker" class="form-select">
+            <option value="kpwbi-kantor-pusat">🏛️ Kantor Pusat Bank Indonesia</option>
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div class="form-row-2">
+          <!-- Jenis Disaster -->
+          <div class="form-group">
+            <label>Jenis Disaster</label>
+            <select id="inputIncType" class="form-select" onchange="onDisasterTypeChange()">
+              <option value="Natural Disaster">🌊 Natural Disaster (Bencana Alam)</option>
+              <option value="Man Made Disaster">👥 Man Made Disaster (Bencana Sosial/Fisik)</option>
+              <option value="Technology Disaster" selected>💻 Technology Disaster (Sistem & Digital)</option>
+            </select>
+          </div>
+
+          <!-- Sub-Kejadian / Nama Bencana Dinamis -->
+          <div class="form-group">
+            <label>Nama Kejadian / Sub-Kategori</label>
+            <select id="inputIncSubCategory" class="form-select" onchange="onSubCategoryChange()">
+              <!-- Populated dynamically via JS -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Kolom Teks Kustom jika Memilih Opsi Lainnya -->
+        <div class="form-group" id="rowCustomEventName" style="display: none;">
+          <label>Nama Bencana / Kejadian Khusus (Lainnya)</label>
+          <input type="text" id="inputCustomEventName" class="form-input" placeholder="Tuliskan nama spesifik kejadian...">
+        </div>
+
+        <!-- 24 APTK SELECTOR (HANYA MUNCUL KETIKA TECHNOLOGY DISASTER) -->
+        <div class="form-group" id="rowAptkSelector">
+          <label>Aplikasi Pendukung Tugas Kritikal (APTK) Terdampak</label>
+          <select id="inputIncAptk" class="form-select">
+            <option value="Tidak Ada">- Tidak Berdampak pada APTK -</option>
+            <optgroup label="Tier 1 • Mission Critical (Dampak 5)">
+              <option value="BI-RTGS">BI-RTGS (Real-Time Gross Settlement)</option>
+              <option value="BI-FAST">BI-FAST (Fast Payment 24/7)</option>
+              <option value="SKNBI">SKNBI (Sistem Kliring Nasional)</option>
+              <option value="CBS">CBS (Core Banking System BI)</option>
+              <option value="Pusat Data (EDW BI)">Pusat Data (EDW BI - Data Center)</option>
+              <option value="SI-SSSS">SI-SSSS (Scripless Securities Settlement)</option>
+              <option value="SWIFT">SWIFT (Financial Messaging Network)</option>
+            </optgroup>
+            <optgroup label="Tier 2 • Business Critical (Dampak 4)">
+              <option value="BI-ETP">BI-ETP (Electronic Trading Platform)</option>
+              <option value="SISMONTAVAR">SISMONTAVAR (Monitoring Valuta Asing)</option>
+              <option value="ANTASENA">ANTASENA (Sistem Pelaporan Terintegrasi)</option>
+              <option value="SI-BISSSS">SI-BISSSS (Settlement & Penatausahaan)</option>
+              <option value="Bloomberg">Bloomberg (Market Data Terminal)</option>
+              <option value="Refinitiv">Refinitiv (Reuters Dealing & Analytics)</option>
+              <option value="FOMOBO">FOMOBO (Front Middle Back Office Moneter)</option>
+              <option value="HARTIS">HARTIS (Real-Time Treasury Information)</option>
+              <option value="En-Reporting SWIFT">En-Reporting SWIFT (Reporting SWIFT)</option>
+            </optgroup>
+            <optgroup label="Tier 3 • Operational Support (Dampak 3)">
+              <option value="NCP">NCP (New Clearing Platform)</option>
+              <option value="GMMP">GMMP (Global Market Monitoring Platform)</option>
+              <option value="ERPHRIS">ERPHRIS (ERP SDM & Payroll)</option>
+              <option value="BI-WEB">BI-WEB (Portal Komunikasi Publik)</option>
+              <option value="BI-SSS">BI-SSS (Settlement Surat Berharga)</option>
+              <option value="CISCO (CUIC)">CISCO (CUIC - Contact Center & Call)</option>
+              <option value="BI-SILK">BI-SILK (Sistem Informasi Layanan Kas)</option>
+              <option value="SIMP">SIMP (Manajemen Pengadaan & Logistik)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Waktu Mulai Gangguan (t₀)</label>
+            <input type="datetime-local" id="inputIncTime" class="form-input">
+          </div>
+          <!-- Status / Level Insiden Baru -->
+          <div class="form-group">
+            <label>Penetapan Status Level</label>
+            <select id="inputIncStatusLevel" class="form-select">
+              <option value="Normal">🟢 Normal (Operasional Aman)</option>
+              <option value="Normal Waspada">🟡 Normal - Waspada (Pemantauan Aktif)</option>
+              <option value="Normal Siaga" selected>🟠 Normal - Siaga (Kontinjensi Parsial)</option>
+              <option value="Ditenggarai Krisis">🔴 Ditenggarai Krisis (CMT Aktif)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Parameter BCM (RPO & RTO Khusus Teknologi, MTPD & Relokasi untuk Non-Tech) -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;" id="bcmParamHeader">
+            Parameter Pemulihan Teknologi (RPO & RTO Aktif):
+          </div>
+
+          <!-- Row for Technology Disaster -->
+          <div class="form-row-3" id="techParamRow">
+            <div class="form-group">
+              <label>Batas MTPD</label>
+              <input type="text" id="inputIncMTPD" class="form-input" value="6 Jam" placeholder="e.g. 6 Jam">
+            </div>
+            <div class="form-group">
+              <label>Target RTO (Online)</label>
+              <input type="text" id="inputIncRTO" class="form-input" value="4 Jam" placeholder="e.g. 4 Jam">
+            </div>
+            <div class="form-group">
+              <label>Batas RPO (Data Loss)</label>
+              <input type="text" id="inputIncRPO" class="form-input" value="5 Menit" placeholder="e.g. 5 Menit">
+            </div>
+          </div>
+
+          <!-- Row for Non-Tech Disaster (Natural / Man-Made) -->
+          <div class="form-row-2" id="nonTechParamRow" style="display: none;">
+            <div class="form-group">
+              <label>Batas Toleransi MTPD</label>
+              <input type="text" id="inputIncMTPDNonTech" class="form-input" value="24 Jam" placeholder="e.g. 24 Jam">
+            </div>
+            <div class="form-group">
+              <label>Target Relokasi / Lokasi Cadangan</label>
+              <input type="text" id="inputIncRelocation" class="form-input" value="Alternate Site / Gedung Korwil" placeholder="Lokasi kerja alternatif...">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tautan Folder OneDrive Terkait Insiden</label>
+          <input type="url" id="inputIncOneDrive" class="form-input" placeholder="https://onedrive.live.com/...">
+        </div>
+
+        <div class="form-group">
+          <label>Ringkasan Kronologis & Tindak Lanjut Awal</label>
+          <textarea id="inputIncDesc" rows="2" class="form-textarea" placeholder="Tuliskan keterangan penanganan awal..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modalNewIncident')">Batal</button>
+        <button class="btn-primary" onclick="saveNewIncident()">💾 Simpan Insiden & Update Kurva BCM</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ATUR WAKTU KURVA BCM & CALL FOR MEETING (CFM) -->
+  <div class="modal-overlay" id="modalBcmCurve">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3><span>📈</span> Konfigurasi Kurva Lambda BCM & Call For Meeting (CFM)</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalBcmCurve')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Waktu Mulai Gangguan (t₀)</label>
+            <input type="text" id="cfgStartTime" class="form-input" value="08:15">
+          </div>
+          <div class="form-group">
+            <label>Waktu Pulih Normal (100%)</label>
+            <input type="text" id="cfgEndTime" class="form-input" value="12:15">
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Tipe Gangguan</label>
+            <select id="cfgIsTech" class="form-select" onchange="onBcmCfgTypeChange()">
+              <option value="true" selected>Teknologi (Ada RPO & RTO)</option>
+              <option value="false">Non-Teknologi (Natural / Man-Made)</option>
+            </select>
+          </div>
+          <div class="form-group" id="cfgRpoGroup">
+            <label>RPO (Mundur t₀)</label>
+            <input type="text" id="cfgRpoVal" class="form-input" value="5 Menit">
+          </div>
+          <div class="form-group" id="cfgRtoGroup">
+            <label>Target RTO</label>
+            <input type="text" id="cfgRtoVal" class="form-input" value="4 Jam">
+          </div>
+        </div>
+
+        <!-- Daftar Call For Meeting (CFM) -->
+        <div style="border-top: 1px solid var(--border-light); padding-top: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <label style="font-weight: 700; color: var(--text-dark);">Daftar Call For Meeting (CFM) Koordinasi BCM:</label>
+            <button class="btn-secondary" style="padding: 2px 8px; font-size: 11px;" onclick="addCfmRow()">➕ Tambah Rapat</button>
+          </div>
+          
+          <div id="cfmContainerList" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+            <!-- Populated via JS with CFM list -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modalBcmCurve')">Tutup</button>
+        <button class="btn-primary" onclick="applyBcmCurveSettings()">Simpan & Refresh Kurva</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SIMULASI PARAMETER RESILIENSI (SDM, SDLK, SDTD) -->
+  <div class="modal-overlay" id="modalResilience">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><span>⚡</span> Simulasi Kesiapan Parameter Resiliensi</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalResilience')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+          Geser persentase kesiapan untuk melihat penentuan level status secara otomatis (Normal Stabil, Normal Waspada, Normal Siaga, Ditenggarai Krisis).
+        </p>
+
+        <!-- SDM Slider -->
+        <div class="form-group">
+          <label>SDM (Sumber Daya Manusia) - Kehadiran & Keselamatan Personel</label>
+          <div class="slider-container" style="display: flex; align-items: center; gap: 12px;">
+            <input type="range" id="sliderSDM" min="0" max="100" value="72" style="flex: 1;" oninput="updateResilienceSim()">
+            <span class="slider-val" id="valSDM" style="font-weight: 800; min-width: 45px;">72%</span>
+          </div>
+        </div>
+
+        <!-- SDLK Slider -->
+        <div class="form-group">
+          <label>SDLK (Sumber Daya Lokasi Kerja) - Gedung, Akses & Utilitas</label>
+          <div class="slider-container" style="display: flex; align-items: center; gap: 12px;">
+            <input type="range" id="sliderSDLK" min="0" max="100" value="61" style="flex: 1;" oninput="updateResilienceSim()">
+            <span class="slider-val" id="valSDLK" style="font-weight: 800; min-width: 45px;">61%</span>
+          </div>
+        </div>
+
+        <!-- SDTD Slider -->
+        <div class="form-group">
+          <label>SDTD (Sumber Daya Teknologi Digital) - Jaringan & Core System</label>
+          <div class="slider-container" style="display: flex; align-items: center; gap: 12px;">
+            <input type="range" id="sliderSDTD" min="0" max="100" value="48" style="flex: 1;" oninput="updateResilienceSim()">
+            <span class="slider-val" id="valSDTD" style="font-weight: 800; min-width: 45px;">48%</span>
+          </div>
+        </div>
+
+        <!-- Lainnya Slider -->
+        <div class="form-group">
+          <label>Lainnya - Pasokan Logistik & Pihak Ketiga</label>
+          <div class="slider-container" style="display: flex; align-items: center; gap: 12px;">
+            <input type="range" id="sliderLainnya" min="0" max="100" value="80" style="flex: 1;" oninput="updateResilienceSim()">
+            <span class="slider-val" id="valLainnya" style="font-weight: 800; min-width: 45px;">80%</span>
+          </div>
+        </div>
+
+        <!-- Simulation Result Card -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px; margin-top: 10px;">
+          <div style="font-size: 11px; color: var(--gold-primary); font-weight: 800; text-transform: uppercase;">Hasil Evaluasi Tingkat Krisis:</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+            <span style="font-size: 17px; font-weight: 800; color: var(--text-dark);" id="simStatusText">Normal Siaga</span>
+            <span class="badge-status" id="simStatusBadge" style="background: var(--status-siaga-bg); color: var(--status-siaga); font-size: 12px;">⚠️ Normal Siaga</span>
+          </div>
+          <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 6px;" id="simStatusDesc">
+            Terjadi penurunan kesiapan pada SDTD (< 50%). Aktivasi prosedur kontinjensi dan pantau eskalasi.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="resetResilienceDefaults()">Reset Default</button>
+        <button class="btn-primary" onclick="applyResilienceSim()">Terapkan ke Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT ONEDRIVE LINK (PKT / DRA / BCS) -->
+  <div class="modal-overlay" id="modalEditOneDrive">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><span>🔗</span> Kustomisasi Tautan OneDrive Pribadi</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalEditOneDrive')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nama Satuan Kerja / KPwDN</label>
+          <input type="text" id="editOneDriveName" class="form-input" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group">
+          <label>Tipe Berkas</label>
+          <input type="text" id="editOneDriveYear" class="form-input" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group">
+          <label>Tautan OneDrive Pribadi (Paste URL Folder / File OneDrive Anda)</label>
+          <input type="url" id="editOneDriveUrl" class="form-input" placeholder="https://1drv.ms/u/... atau https://onedrive.live.com/...">
+          <small style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+            💡 Tautan ini disimpan di browser Anda secara lokal, sehingga Anda bebas menghubungkannya ke folder OneDrive pribadi masing-masing.
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modalEditOneDrive')">Batal</button>
+        <button class="btn-primary" onclick="saveOneDriveCustomLink()">Simpan Tautan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRATINJAU DOKUMEN BCM -->
+  <div class="modal-overlay" id="modalPreviewDoc">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 id="docPreviewTitle"><span>📄</span> Format Dokumen BCM</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalPreviewDoc')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="docPreviewContent" style="background: #f8fafc; padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-family: monospace; font-size: 12px; white-space: pre-wrap; line-height: 1.6; color: var(--text-dark);">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="copyDocContent()">📋 Salin Teks</button>
+        <button class="btn-primary" onclick="openDocOneDrive()">🔗 Buka di OneDrive</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: POP-UP DETAIL INSIDEN & PENANGANAN BCM -->
+  <div class="modal-overlay" id="modalIncidentLambda">
+    <div class="modal-box" style="max-width: 900px; width: 95vw;">
+      <div class="modal-header">
+        <h3 id="incModalHeaderTitle"><span>🚨</span> Detail Insiden & Penanganan BCM: <span id="incModalId" style="color: var(--gold-accent);">INC-2025-06-001</span></h3>
+        <button class="btn-close-modal" onclick="closeModal('modalIncidentLambda')">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 16px 20px; max-height: calc(88vh - 120px); overflow-y: auto;">
+        
+        <!-- Top Banner: Satker, Kategori, Status & Live Digital Timer -->
+        <div class="lambda-digital-counter" style="margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; font-weight: 700;" id="incModalOfficeBadge">Kantor Pusat Bank Indonesia (KP)</div>
+            <div style="font-size: 15px; font-weight: 800; color: #ffffff; margin-top: 3px;" id="incModalDisasterTitle">Technology Disaster: Kegagalan Server / Storage Data Center</div>
+            <div style="font-size: 11px; color: var(--gold-accent); margin-top: 4px;" id="incModalTimeSpan">Mulai: 2025-06-10 08:15 WIB</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 10px; color: rgba(255,255,255,0.7); text-transform: uppercase; font-weight: 700;">Waktu Berjalan (Live Detik)</div>
+            <div class="lambda-digital-time" id="incModalLiveCounter" style="font-size: 22px;">00:00:00</div>
+            <span id="incModalStatusBadge" class="status-badge-open" style="font-size: 10px; padding: 2px 8px; cursor: pointer;" onclick="toggleCurrentModalIncidentStatus()" title="Klik untuk mengubah status">● SEDANG BERJALAN (LIVE)</span>
+          </div>
+        </div>
+
+        <!-- Section 1: Rincian Utama & Klasifikasi Insiden -->
+        <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 14px;">
+          <div style="font-size: 12px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span>📋</span>
+              <span>Informasi Utama Insiden</span>
+            </div>
+            <span style="font-size: 10.5px; color: var(--text-muted);">ID Registrasi: <strong id="incModalSubId" style="color: var(--text-dark);">-</strong></span>
+          </div>
+          <input type="hidden" id="editIncId">
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Satker / KPw Pelapor</label>
+              <input type="text" id="editIncSatkerName" class="form-input" style="font-size: 11.5px; font-weight: 600;" readonly>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Jenis Disaster</label>
+              <select id="editIncDisasterType" class="form-input" style="font-size: 11.5px;" onchange="onEditIncDisasterTypeChange()">
+                <option value="Natural Disaster">🌊 Natural Disaster</option>
+                <option value="Man Made Disaster">👥 Man Made Disaster</option>
+                <option value="Technology Disaster">💻 Technology Disaster</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Tingkat Status Resiliensi</label>
+              <select id="editIncStatusLevel" class="form-input" style="font-size: 11.5px;">
+                <option value="Normal Stabil">🟢 Normal Stabil</option>
+                <option value="Normal Waspada">🟡 Normal Waspada</option>
+                <option value="Normal Siaga">🟠 Normal Siaga</option>
+                <option value="Ditenggarai Krisis">🔴 Ditenggarai Krisis</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Kejadian / Sub-Kategori Bencana</label>
+              <input type="text" id="editIncSubCategory" class="form-input" style="font-size: 11.5px;" placeholder="Misal: Gempa Bumi, Huru-Hara, Server Down...">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;" id="groupEditIncAptk">
+              <label style="font-size: 11px; font-weight: 700;">Aplikasi Pendukung (APTK)</label>
+              <select id="editIncAptk" class="form-input" style="font-size: 11.5px;">
+                <option value="Tidak Ada">Tidak Ada (Bukan TI)</option>
+                <option value="BI-RTGS">BI-RTGS (Real-Time Gross Settlement)</option>
+                <option value="BI-FAST">BI-FAST (Fast Payment 24/7)</option>
+                <option value="CBS">CBS (Core Banking System BI)</option>
+                <option value="Pusat Data (EDW BI)">Pusat Data (EDW BI)</option>
+                <option value="SKNBI">SKNBI (Sistem Kliring Nasional)</option>
+                <option value="SI-SSSS">SI-SSSS (Scripless Securities)</option>
+                <option value="BI-ETP">BI-ETP (Electronic Trading Platform)</option>
+                <option value="SISMONTAVAR">SISMONTAVAR (Monitoring Valas)</option>
+                <option value="ANTASENA">ANTASENA (Pelaporan Terintegrasi)</option>
+                <option value="SI-BISSSS">SI-BISSSS (Kastodian BI)</option>
+                <option value="BI-WEB">BI-WEB (Portal Publik BI)</option>
+                <option value="BI-SSS">BI-SSS (Penatausahaan Surat Berharga)</option>
+                <option value="En-Reporting SWIFT">En-Reporting SWIFT</option>
+                <option value="CISCO (CUIC)">CISCO (CUIC Contact Center)</option>
+                <option value="BI-SILK">BI-SILK (Layanan Kas BI)</option>
+                <option value="SIMP">SIMP (Pengadaan & Logistik)</option>
+                <option value="Bloomberg">Bloomberg Terminal Gateway</option>
+                <option value="SWIFT">SWIFT Alliance Messaging</option>
+                <option value="Refinitiv">Refinitiv Eikon Financial Feed</option>
+                <option value="NCP">NCP (New Clearing Platform)</option>
+                <option value="FOMOBO">FOMOBO (Front-Office Market)</option>
+                <option value="HARTIS">HARTIS (Harga Pasar & Transaksi)</option>
+                <option value="GMMP">GMMP (Global Market Monitoring)</option>
+                <option value="ERPHRIS">ERPHRIS (ERP SDM & Payroll)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Deskripsi Kejadian & Root Cause -->
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 11px; font-weight: 700;">Deskripsi Kejadian, Dampak Operasional & Root Cause (Akar Masalah)</label>
+            <textarea id="editIncRootCause" rows="2" class="form-input" style="font-size: 11.5px; line-height: 1.4;" placeholder="Jelaskan kronologi singkat kejadian, dampak terhadap layanan kantor BI, tindakan kontinjensi awal, serta akar masalah..."></textarea>
+          </div>
+
+          <!-- OneDrive Folder Link -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 11px; font-weight: 700;">Tautan Folder OneDrive Dokumen Insiden</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="url" id="editIncOneDrive" class="form-input" style="font-size: 11px; font-family: monospace;" placeholder="https://onedrive.live.com/?id=...">
+              <a href="#" id="btnModalOpenOneDrive" target="_blank" rel="noopener noreferrer" class="btn-primary" style="padding: 4px 12px; font-size: 11px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; text-decoration: none;">
+                <span>🔗</span>
+                <span>Buka OneDrive ↗</span>
+              </a>
+            </div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px;">
+              Folder ini terhubung untuk menyimpan Berita Acara, Format Pelaporan WA, Memorandum, Risalah Rapat CFM, dan Laporan Penyelesaian Akhir.
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: KURVA LAMBDA BCM & PARAMETER PEMULIHAN -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+                <span>📈</span>
+                <span>Riwayat Insiden & Kurva Pemulihan BCM</span>
+              </div>
+              <div style="font-size: 10.5px; color: var(--text-muted);">
+                Bagian analisis visual waktu pemulihan, batas toleransi (MTPD), target RTO, dan titik koordinasi CFM
+              </div>
+            </div>
+            <div style="font-size: 10.5px; display: flex; gap: 8px; flex-wrap: wrap;">
+              <span style="color: #2563eb; font-weight: 600;">● Waktu Berjalan</span>
+              <span style="color: #10b981; font-weight: 600;">● Target RTO</span>
+              <span style="color: #dc2626; font-weight: 600;">● Batas Kritis MTPD</span>
+              <span style="color: #d97706; font-weight: 600;">◆ Titik CFM</span>
+            </div>
+          </div>
+
+          <!-- Canvas Kurva Lambda -->
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px; margin-bottom: 12px;">
+            <canvas id="canvasIncidentLambda" style="width: 100%; height: 210px; display: block; border-radius: 4px; background: #fafafa;"></canvas>
+          </div>
+
+          <!-- Editable Times & Durations -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px;">Waktu Mulai Gangguan (t0)</label>
+              <input type="datetime-local" id="editIncStartTime" class="form-input" style="font-size: 11.5px;" onchange="recalculateIncidentDurationFromTimes()">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px;">Status Kondisi Insiden</label>
+              <select id="editIncStatus" class="form-input" style="font-size: 11.5px;" onchange="onEditIncStatusChange()">
+                <option value="OPEN">🔴 OPEN (Detik Berjalan Live)</option>
+                <option value="CLOSED">🟢 CLOSED (Insiden Terselesaikan)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px;">Waktu Selesai (t_close)</label>
+              <input type="datetime-local" id="editIncEndTime" class="form-input" style="font-size: 11.5px;" onchange="recalculateIncidentDurationFromTimes()">
+            </div>
+          </div>
+
+          <!-- Manual Overwrite Duration -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; align-items: flex-end; margin-bottom: 10px; padding: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-sm);">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: var(--text-dark);">Ubah Durasi Berjalan Manual (Detik)</label>
+              <div style="font-size: 10px; color: var(--text-muted);">Ubah nilai jam, menit, atau detik untuk menyetel ulang kurva & waktu pemulihan.</div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 10.5px;">Jam</label>
+              <input type="number" id="editIncHours" min="0" max="999" class="form-input" style="font-size: 11.5px; font-weight: 700;" oninput="onManualHmsChange()">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 10.5px;">Menit</label>
+              <input type="number" id="editIncMinutes" min="0" max="59" class="form-input" style="font-size: 11.5px; font-weight: 700;" oninput="onManualHmsChange()">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 10.5px;">Detik</label>
+              <input type="number" id="editIncSeconds" min="0" max="59" class="form-input" style="font-size: 11.5px; font-weight: 700;" oninput="onManualHmsChange()">
+            </div>
+          </div>
+
+          <!-- MTPD, RTO, RPO settings -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; font-weight: 700;">MTPD (Batas Toleransi Maksimum)</label>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <input type="number" id="editIncMtpd" step="0.5" min="0.5" class="form-input" style="font-size: 11.5px;" oninput="updateLiveLambdaCanvasFromInputs()">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Jam</span>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Target RTO (Recovery Time)</label>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <input type="number" id="editIncRto" step="0.5" min="0.5" class="form-input" style="font-size: 11.5px;" oninput="updateLiveLambdaCanvasFromInputs()">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Jam</span>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Target RPO (Data Loss Tolerance)</label>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <input type="number" id="editIncRpo" step="5" min="0" class="form-input" style="font-size: 11.5px;" oninput="updateLiveLambdaCanvasFromInputs()">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Menit</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Call For Meeting (CFM) Management -->
+        <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <span style="font-size: 12px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+                <span>📢</span>
+                <span>Daftar Call For Meeting (CFM) Insiden Ini</span>
+              </span>
+              <span style="font-size: 10.5px; color: var(--text-muted);">Titik rapat koordinasi darurat pimpinan yang diplot ke grafik Lambda</span>
+            </div>
+            <button class="btn-secondary" style="padding: 3px 10px; font-size: 11px;" onclick="addIncidentCfmRow()">➕ Tambah Titik CFM</button>
+          </div>
+          <div id="incidentCfmListContainer" style="display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto;">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button class="action-link-btn" onclick="toggleCurrentModalIncidentStatus()" id="btnToggleModalStatus" style="font-size: 11px; padding: 6px 12px;">
+          🔄 Ubah Status Insiden (OPEN/CLOSED)
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" onclick="closeModal('modalIncidentLambda')">Tutup</button>
+          <button class="btn-primary" onclick="saveIncidentFullDetail()">💾 Simpan Seluruh Detail & Kurva</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RINCIAN KETERANGAN KERENTANAN BENCANA KPWDN -->
+  <div class="modal-overlay" id="modalHazardDetail">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 id="hazardDetailTitle"><span>🌋</span> Rincian Kerentanan Bencana: <span id="hazardDetailTitleName">Banjir Bandang</span></h3>
+        <button class="btn-close-modal" onclick="closeModal('modalHazardDetail')">✕</button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Office & Hazard Header Card -->
+        <div style="background: #09172d; color: #ffffff; border-radius: var(--radius-sm); padding: 14px 18px; border: 1px solid rgba(212, 175, 55, 0.4); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 11px; color: var(--gold-accent); font-weight: 700;" id="hazardDetailOfficeName">KPwBI Provinsi Jawa Barat</div>
+            <div style="font-size: 16px; font-weight: 900; color: #ffffff; margin-top: 2px;" id="hazardDetailHazardName">Banjir Bandang & Luapan Sungai Citarum</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 3px;" id="hazardDetailLocation">Kota Bandung • Koordinat: -6.9147, 107.6098</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 700;">TINGKAT RISIKO INARISK</div>
+            <div id="hazardDetailScoreBadge" style="margin-top: 4px;">
+              <span class="badge badge-risk-high" style="font-size: 12px; padding: 4px 10px;">🔴 TINGGI (Skor: 88)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Karakteristik Geografis & Penyebab -->
+        <div class="hazard-detail-section">
+          <h4><span>🗺️</span> Karakteristik Geografis & Faktor Kerentanan</h4>
+          <p id="hazardDetailGeoDesc">Kawasan dataran cekungan Bandung dengan curah hujan tinggi serta hilir aliran sungai yang berpotensi meluap ke akses jalan protokol kantor.</p>
+        </div>
+
+        <!-- Section 2: Dampak Kritikal Terhadap Operasional BI -->
+        <div class="hazard-detail-section">
+          <h4><span>🏦</span> Potensi Dampak Operasional Bank Indonesia</h4>
+          <p id="hazardDetailImpactDesc">Gangguan mobilitas armada Pengelolaan Uang Rupiah (PUR), risiko genangan pada area basemen/genset, dan potensi hambatan kliring manual SPPUR.</p>
+        </div>
+
+        <!-- Section 3: Riwayat Kejadian Signifikan -->
+        <div class="hazard-detail-section">
+          <h4><span>📜</span> Catatan Riwayat Insiden Terkait</h4>
+          <p id="hazardDetailHistoryDesc">Tercatat insiden genangan akses masuk pada Q1 2024 setinggi 30 cm, berhasil diatasi dengan pompa banjir dan peninggian tanggul portabel tanpa memutus operasional kas.</p>
+        </div>
+
+        <!-- Section 4: Rekomendasi Mitigasi & SOP BCM -->
+        <div class="hazard-detail-section" style="background: rgba(212, 175, 55, 0.08); border-color: var(--gold-border);">
+          <h4 style="color: var(--gold-primary);"><span>🛡️</span> Prosedur Mitigasi & Kesiapsiagaan BCM</h4>
+          <p id="hazardDetailMitigationDesc">Aktivasi sistem pompa otomatis, penutupan flood-gate khazanah, koordinasi BPBD setempat, dan pengalihan operasional kas ke Alternate Office jika genangan mencapai ambang siaga.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modalHazardDetail')">Tutup</button>
+        <button class="btn-primary" onclick="openProfilDetailFromHazard()">🏛️ Buka Profil Wilayah Lengkap</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DIREKTORI EMERGENCY EMAIL & KONTAK DARURAT BCM -->
+  <div class="modal-overlay" id="modalEmergencyEmail">
+    <div class="modal-box" style="max-width: 840px;">
+      <div class="modal-header">
+        <h3><span>📧</span> Direktori Emergency Email & Kontak Darurat BCM Bank Indonesia</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalEmergencyEmail')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <strong style="font-size: 13px; color: var(--text-dark);">Daftar Kontak Komando Krisis & CMT (Crisis Management Team)</strong>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+              Gunakan kontak di bawah ini untuk eskalasi cepat insiden, deklarasi status krisis, atau koordinasi antar-satuan kerja.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-primary" style="padding: 4px 12px; font-size: 11px;" onclick="broadcastEmergencyEmail()">
+              <span>📢</span>
+              <span>Kirim Broadcast Email Darurat</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Search Box for Contacts -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="emergencySearchInput" class="search-input" placeholder="🔍 Cari Nama, Level Jabatan, Satker, atau Email..." oninput="filterEmergencyContacts()">
+        </div>
+
+        <div class="table-scroll-wrapper" style="max-height: 380px;">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th style="width: 30px;">No</th>
+                <th>Nama Kontak</th>
+                <th>Level Jabatan</th>
+                <th>Satuan Kerja</th>
+                <th>Email Resmi</th>
+                <th style="text-align: center; width: 130px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="emergencyEmailTableBody">
+              <!-- Populated dynamically via app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modalEmergencyEmail')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTICE -->
+  <div class="toast-notice" id="toastNotice">
+    <span id="toastIcon">🔔</span>
+    <span id="toastMsg">Notifikasi</span>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="app.js?v=3.0"></script>
+</body>
+</html>
